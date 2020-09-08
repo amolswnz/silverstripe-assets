@@ -26,6 +26,7 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\ORM\Queries\SQLUpdate;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\Subsites\Model\Subsite;
 
 /**
  * SS4 and its File Migration Task changes the way in which files are stored in the assets folder, with files placed
@@ -102,6 +103,11 @@ class TagsToShortcodeHelper
      */
     public function run()
     {
+        if (class_exists(Subsite::class)) {
+            $originalFilterSetting = Subsite::$disable_subsite_filter;
+            Subsite::$disable_subsite_filter = true;
+        }
+
         Environment::increaseTimeLimitTo();
 
         $classes = $this->getFieldMap($this->baseClass, $this->includeBaseClass, [
@@ -144,6 +150,9 @@ class TagsToShortcodeHelper
                         $this->updateTable($table.'_Live', $field);
                     }
                 }
+            }
+            if (class_exists(Subsite::class)) {
+                Subsite::$disable_subsite_filter = $originalFilterSetting;
             }
         }
     }
